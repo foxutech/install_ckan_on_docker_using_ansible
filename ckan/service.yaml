@@ -13,12 +13,17 @@
         tag: v1
         push: yes
 
-    - name: Build another image
+    - name: Build datapusher image
       docker_image:
         path: "{{ playbook_dir }}/datapusher"
         name: motoskia/datapusher
         tag: latest
         push: yes
+    
+    - name: Build volume image
+      docker_image:
+        path: "{{ playbook_dir }}/data"
+        name: data
  
    # - docker_service:
    #     project_src: ckan
@@ -61,6 +66,8 @@
                 - postgres:postgres
                 - solr:solr
                 - datapusher:datapusher
+              volumes_from:
+                - data
               volumes:
                 - ./setup/production.ini:/srv/app/production.ini
               environment:
