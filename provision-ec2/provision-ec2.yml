@@ -1,0 +1,10 @@
+---
+ - hosts: localhost
+   connection: local
+   gather_facts: false
+   user: root
+   tags: provisioning
+   pre_tasks:
+    - include_vars: aws_variables/{{type}}.yml
+   roles:
+    - provision-ec2
