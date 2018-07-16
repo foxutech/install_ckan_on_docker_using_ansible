@@ -1,61 +1,35 @@
-# See CKAN docs on installation from Docker Compose on usage
-FROM debian:jessie
-MAINTAINER Open Knowledge
+FROM quay.io/okfn/python2:1.0.0
 
-# Install required system packages
-RUN apt-get -q -y update \
-    && DEBIAN_FRONTEND=noninteractive apt-get -q -y upgrade \
-    && apt-get -q -y install \
-        python-dev \
-        python-pip \
-        python-virtualenv \
-        python-wheel \
-        libpq-dev \
-        libxml2-dev \
-        libxslt-dev \
-        libgeos-dev \
-        libssl-dev \
-        libffi-dev \
-        postgresql-client \
-        build-essential \
-        git-core \
-        vim \
-        wget \
-    && apt-get -q clean \
-    && rm -rf /var/lib/apt/lists/*
+ENV APP_WSGI=ckan.wsgi
 
-# Define environment variables
-ENV CKAN_HOME /usr/lib/ckan
-ENV CKAN_VENV $CKAN_HOME/venv
-ENV CKAN_CONFIG /etc/ckan
-ENV CKAN_STORAGE_PATH=/var/lib/ckan
+ENV GIT_BRANCH=release-v2.6-latest
+ENV GIT_URL=https://github.com/ckan/ckan.git
 
-# Build-time variables specified by docker-compose.yml / .env
-ARG CKAN_SITE_URL
+ENV CKAN_INI=production.ini
+ENV SRC_DIR=${APP_DIR}/src
 
-# Create ckan user
-RUN useradd -r -u 900 -m -c "ckan account" -d $CKAN_HOME -s /bin/false ckan
+RUN mkdir ${WORKSPACE} ${SRC_DIR} && cd ${SRC_DIR} && \
+    git clone -b ${GIT_BRANCH} --depth=1 --single-branch \
+    ${GIT_URL}  ckan && \
+    cd ckan && \
+    cp who.ini ${APP_DIR} && \
+    python setup.py develop && \
+    pip install --upgrade -r requirements.txt
 
-# Setup virtual environment for CKAN
-RUN mkdir -p $CKAN_VENV $CKAN_CONFIG $CKAN_STORAGE_PATH && \
-    virtualenv $CKAN_VENV && \
-    ln -s $CKAN_VENV/bin/pip /usr/local/bin/ckan-pip &&\
-    ln -s $CKAN_VENV/bin/paster /usr/local/bin/ckan-paster
+COPY ${SETUP}/${APP_CONF} ${SUPERVISOR_DIR}/${APP_CONF}
+COPY ${SETUP} ${APP_DIR}
+ENV APP_WSGI ckan.wsgi
 
-# Setup CKAN
-ADD . $CKAN_VENV/src/ckan/
-RUN ckan-pip install -U pip && \
-    ckan-pip install --upgrade --no-cache-dir -r $CKAN_VENV/src/ckan/requirement-setuptools.txt && \
-    ckan-pip install --upgrade --no-cache-dir -r $CKAN_VENV/src/ckan/requirements.txt && \
-    ckan-pip install -e $CKAN_VENV/src/ckan/ && \
-    ln -s $CKAN_VENV/src/ckan/ckan/config/who.ini $CKAN_CONFIG/who.ini && \
-    cp -v $CKAN_VENV/src/ckan/contrib/docker/ckan-entrypoint.sh /ckan-entrypoint.sh && \
-    chmod +x /ckan-entrypoint.sh && \
-    chown -R ckan:ckan $CKAN_HOME $CKAN_VENV $CKAN_CONFIG $CKAN_STORAGE_PATH
+COPY ${SETUP}/dump_env.conf ${SUPERVISOR_DIR}/dump_env.conf
+COPY ${SETUP}/dump_env.py ${APP_DIR}/dump_env.py
 
-ENTRYPOINT ["/ckan-entrypoint.sh"]
+WORKDIR ${APP_DIR}
 
-USER ckan
-EXPOSE 5000
+# Add ckan command
+RUN ln -s ${APP_DIR}/ckan /usr/bin/ckan
 
-CMD ["ckan-paster","serve","/etc/ckan/production.ini"]
+# We need setuptools<19.4, otherwise ckanext-oauth2 can not be installed because of
+# https://bitbucket.org/pypa/setuptools/issues/491/setuptools-194-breaks-pip-install-builds
+# This can be removed once this is merged:
+# https://github.com/conwetlab/ckanext-oauth2/pull/7
+RUN pip install setuptools==19.3

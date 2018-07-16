@@ -1,0 +1,69 @@
+- name: Run with inline v2 compose 
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: current_working_directory
+      shell: pwd
+      register: current_working_directory  
+    - name: Build an image and push it to repo
+      docker_image:
+        path: ./data
+        name: motoskia/ckan
+        tag: v1
+        push: yes
+
+    - name: Build another image
+      docker_image:
+        path: "{{ playbook_dir }}/datapusher"
+        name: motoskia/datapusher
+        tag: latest
+        push: yes
+ 
+   # - docker_service:
+   #     project_src: ckan
+   #     state: absent
+
+    - docker_service:
+        project_name: ckan
+        definition:
+          version: '2'
+          services:
+            postgres:
+              image: postgres:latest
+              hostname: postgres
+              ports:
+                - "5432:5432"
+              environment:
+                CKAN_SQLALCHEMY_URL: postgresql://ckan_default:pass@postgres:5432/ckan_default
+                CKAN_DATASTORE_WRITE_URL: postgresql://ckan_default:pass@postgres:5432/datastore_default
+                CKAN_DATASTORE_READ_URL: postgresql://datastore_default:pass@postgres:5432/datastore_default
+              volumes:
+                - ./postgres/create_ckan_database_objects.sh:/docker-entrypoint-initdb.d/create_ckan_database_objects.sh
+                - ./postgres/setup_remote_connections.sh:/docker-entrypoint-initdb.d/setup_remote_connections.sh
+
+            solr:
+              image: solr:5.5
+              hostname: solr
+              volumes:
+                - ./solr/ckan:/opt/solr/server/solr/ckan
+
+            datapusher:
+              image: motoskia/datapusher:latest
+              hostname: datapusher
+
+            ckan:
+              image: motoskia/ckan:v1
+              hostname: ckan
+              ports:
+                - "8000:8000"
+              links:
+                - postgres:postgres
+                - solr:solr
+                - datapusher:datapusher
+              volumes:
+                - ./setup/production.ini:/srv/app/production.ini
+              environment:
+                CKAN_SQLALCHEMY_URL: postgresql://ckan_default:pass@postgres:5432/ckan_default
+                CKAN_DATASTORE_WRITE_URL: postgresql://ckan_default:pass@postgres:5432/datastore_default
+                CKAN_DATASTORE_READ_URL: postgresql://datastore_default:pass@postgres:5432/datastore_default
