@@ -11,11 +11,13 @@
 
   - name: apt update
     apt: update_cache=yes
+    tag: update
   
   - name: Install list of packages
+    tag: install
     apt:
       name: "{{ item }}"
-      state: installed
+      state: present
     with_items:
       - apt-transport-https
       - ca-certificates
