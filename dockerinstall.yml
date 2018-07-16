@@ -1,4 +1,4 @@
-- hosts: tag_Name_dataserver
+- hosts: localhost
   user: ubuntu
   sudo: yes
   tasks:
