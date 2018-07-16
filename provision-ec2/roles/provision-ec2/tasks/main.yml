@@ -1,30 +1,5 @@
 
 ---
- - name: Create a security group
-   local_action:
-     module: ec2_group
-     name: "{{ ec2_security_group }}"
-     description: Security Group for Dataserver Servers
-     region: "{{ region }}"
-     rules:
-       - proto: tcp
-         type: ssh
-         from_port: 22
-         to_port: 22
-         cidr_ip: 0.0.0.0/0
-       - proto: tcp
-         from_port: 8800
-         to_port: 8800
-         cidr_ip: 0.0.0.0/0
-       - proto: tcp
-         from_port: 5000
-         to_port: 80
-         cidr_ip: 0.0.0.0/0
-     rules_egress:
-       - proto: all
-         type: all
-         cidr_ip: 0.0.0.0/0
-
  - name: Provision EC2 Box
    local_action:
      module: ec2

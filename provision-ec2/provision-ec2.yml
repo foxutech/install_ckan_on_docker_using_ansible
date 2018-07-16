@@ -5,6 +5,6 @@
    user: root
    tags: provisioning
    pre_tasks:
-    - include_vars: aws_variables/{{type}}.yml
+    - include_vars: aws_variables/vars.yml
    roles:
     - provision-ec2

@@ -1,8 +1,8 @@
 ec2_keypair: "foxutech"
-ec2_security_group: "foxutech"
+ec2_security_group: "sg-0846f25ebe4e6f73e"
 ec2_instance_type: "t2.micro"
 ec2_image: "ami-ba602bc2"
-ec2_subnet_ids: ['subnet-REDACTED','subnet-REDACTED','subnet-REDACTED']
+ec2_subnet_ids: ['subnet-0fd52193ca4039b8d']
 ec2_region: "us-west-2"
 ec2_tag_Name: "dataserver"
 ec2_tag_Type: "dataserver"
