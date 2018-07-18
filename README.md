@@ -30,8 +30,11 @@ $ sudo apt install python-pip
 $ sudo pip install boto
  
 $ sudo vim ~/.boto
+
 [Credentials] 
+
 aws_access_key_id = HIDDEN 
+
 aws_secret_access_key = HIDDEN
 
  Once you done, you are good to go for run a playbook.
@@ -55,6 +58,7 @@ $ sudo ansible-playbook service.yml -vvv
  If you are running remotely, use ec2.py to fetch your ec2 instance details. (as my case, kept in same working folder) you can change directory. 
  
 export EC2_INI_PATH=/root/install_ckan_on_docker_using_ansible/provision-ec2/ec2.ini
+
 export ANSIBLE_INVENTORY=/root/install_ckan_on_docker_using_ansible/provision-ec2/ec2.py
 
  this helps enable dynamic host on playbook.
