@@ -2,6 +2,12 @@
   user: ubuntu
   sudo: yes
   tasks:
+  - name copy and run the basic installation script
+    copy: src:ansibleinstall.sh dest: /home/ubuntu mode: 0511
+    
+  - name: run a script
+    command: ./ansibleinstall.sh
+    
   - name: Add Docker GPG key
     apt_key: url=https://download.docker.com/linux/ubuntu/gpg
 
