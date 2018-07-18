@@ -11,16 +11,26 @@
    
    before provision, we have to mention the required aws variable like security group, subnet and key value, this you can automate, as already i have some existing environment, i reused it. your environment variable should look like this:
    
-$ cat /provision-ec2/aws_variables/vars.yml   
+$ cat /provision-ec2/aws_variables/vars.yml 
+
 ec2_keypair: "keyfile name"
+
 ec2_security_group: "sg-xxxxxxxxxxxxxxx"
+
 ec2_instance_type: "t2.micro"
+
 ec2_image: "ami-ba602bc2"
+
 ec2_subnet_ids: ['subnet-xxxxxxxxxxxxxxxx']
+
 ec2_region: "us-west-2"
+
 ec2_tag_Name: "dataserver"
+
 ec2_tag_Type: "dataserver"
+
 ec2_tag_Environment: "development"
+
 ec2_volume_size: 20
 
  once you set all the variable, then install the boto3 to setup AWS credentials using following command on localhost.
@@ -57,8 +67,8 @@ $ sudo ansible-playbook service.yml -vvv
  
  If you are running remotely, use ec2.py to fetch your ec2 instance details. (as my case, kept in same working folder) you can change directory. 
  
-export EC2_INI_PATH=/root/install_ckan_on_docker_using_ansible/provision-ec2/ec2.ini
+$ export EC2_INI_PATH=/root/install_ckan_on_docker_using_ansible/provision-ec2/ec2.ini
 
-export ANSIBLE_INVENTORY=/root/install_ckan_on_docker_using_ansible/provision-ec2/ec2.py
+$ export ANSIBLE_INVENTORY=/root/install_ckan_on_docker_using_ansible/provision-ec2/ec2.py
 
  this helps enable dynamic host on playbook.
